@@ -9,44 +9,48 @@ module.exports = {
 
     return response.json(devs);
   },
-  
+
   async store(request, response) {
     const { github_username, techs, latitude, longitude } = request.body;
 
-    let dev = await Dev.findOne({ github_username });
+    try {
+      let dev = await Dev.findOne({ github_username });
 
-    if (!dev) {
-      const apiResponse = await axios.get(`https://api.github.com/users/${github_username}`);
-  
-      const { name = login, avatar_url, bio } = apiResponse.data;
-    
-      const techsArray = parseStringAsArray(techs);
-    
-      const location = {
-        type: 'Point',
-        coordinates: [longitude, latitude],
-      };
-    
-      dev = await Dev.create({
-        github_username,
-        name,
-        avatar_url,
-        bio,
-        techs: techsArray,
-        location,
-      })
+      if (!dev) {
+        const apiResponse = await axios.get(`https://api.github.com/users/${github_username}`);
 
-      // Filtrar as conexões que estão há no máximo 10km de distância
-      // e que o novo dev tenha pelo menos uma das tecnologias filtradas
+        const { name = login, avatar_url, bio } = apiResponse.data;
 
-      const sendSocketMessageTo = findConnections(
-        { latitude, longitude },
-        techsArray,
-      )
+        const techsArray = parseStringAsArray(techs);
 
-      sendMessage(sendSocketMessageTo, 'new-dev', dev);
+        const location = {
+          type: 'Point',
+          coordinates: [longitude, latitude],
+        };
+
+        dev = await Dev.create({
+          github_username,
+          name,
+          avatar_url,
+          bio,
+          techs: techsArray,
+          location,
+        })
+
+        // Filtrar as conexões que estão há no máximo 10km de distância
+        // e que o novo dev tenha pelo menos uma das tecnologias filtradas
+
+        const sendSocketMessageTo = findConnections(
+          { latitude, longitude },
+          techsArray,
+        )
+
+        sendMessage(sendSocketMessageTo, 'new-dev', dev);
+      }
+
+      return response.json(dev);
+    } catch (error) {
+      return response.status(404).json('User does not exists');
     }
-  
-    return response.json(dev);
   },
 };
