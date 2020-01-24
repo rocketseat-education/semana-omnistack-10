@@ -49,4 +49,32 @@ module.exports = {
   
     return response.json(dev);
   },
+
+  async destroy (request, response) {
+    const { id } = request.params;
+    
+    let dev = await Dev.findByIdAndDelete(id);
+
+    return response.json(dev);
+  },
+
+  async update (request, response) {
+    const { techs, latitude, longitude } = request.body;
+        
+    const { id } = request.params;
+
+    const techsArray = parseStringAsArray(techs);
+
+    const location = {
+      type: 'Point',
+      coordinates: [longitude, latitude],
+    };
+
+    let dev = await Dev.findByIdAndUpdate(id, {
+      techs: techsArray,
+      location
+    })
+    
+    return response.json(dev);
+  }
 };
