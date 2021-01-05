@@ -9,7 +9,7 @@
   },
   "dependencies": {
     "@react-native-community/masked-view": "^0.1.6",
-    "axios": "^0.19.1",
+    "axios": "^0.21.1",
     "expo": "~36.0.0",
     "expo-location": "~8.0.0",
     "react": "~16.9.0",
